@@ -27,6 +27,15 @@ app.use(express.static("public"))
 app.use(cookieParser())
 
 
+//routes import
 
+import userRouter from './routes/user.routes.js'
 
+//routes declaration:  pehle ham app.get se hi kaam chala rha the, yahin routes likhte the, yahin controllers
+//pr ab chien seprate krdi hain toh , router ko ham alg niakl le gye hain
+//to router ko laane ke liye middleware laana pdega
+app.use("/api/v1/users", userRouter)
+//jese hi koi /user type krega to ham control de denge userrouter ka
+
+//ab url bn jaega : https://localhost:8000/api/v1/users/register
 export { app } 
