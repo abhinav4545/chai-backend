@@ -4,6 +4,23 @@ import {User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+
+const generateAccessAndRefreshTokens = async(userId) => {
+    try {
+       const user = await  User.findById(userId)
+       const accessToken = user.generateAccessToken()
+       const refreshToken = user.generateRefreshToken()
+
+       user.refreshToken = refreshToken
+       await user.save({validateBeforeSave: false})
+
+       return {accessToken, refreshToken}
+    
+    } catch (error) {
+        throw new ApiError(500, "Something went worng while generating refresh and access token") 
+            
+    }
+}
 const registerUser = asyncHandler( async (req,res) => {
     //  res.status(200).json({
     //     message: "ok" 
@@ -94,7 +111,79 @@ const registerUser = asyncHandler( async (req,res) => {
 
 })
 
+const loginUser = asyncHandler(async (req, res) => {
+//todos:  req body -> data
+//username or eamil
+//find the user
+//password check
+//access and refresh token
+//send cookie(secure)//
+//resp. bhejdo: sucesfully login
+
+const {email, username, password} = req.body
+
+if(!username || !email) {
+    throw new ApiError(400, "username or password is required")
+}
+
+const user = await User.findOne({
+    $or: [{username}, {email}]
+})
+
+if(!user) {
+    throw new ApiError(404, "User does nit exist")
+}
+
+//User: mongoose ka ek obj hai: isme mongoose ke methods
+// milte hain, for ex: findone ,updateeone
+const isPasswordValid = await user.isPasswordCorrect(password)
+
+if(!isPasswordValid) {
+    throw new ApiError(404, "Invalid Password")
+}
+
+
+   const {accessToken, refreshToken} = await 
+   generateAccessAndRefreshTokens(user._id)
+
+   //optional step
+   const loggedInUser = User.findById(user._id)
+   select("-password -refreshToken")
+
+   //cookies bhejni hai
+   const options = {
+    httpOnly: true,
+    secure: true
+    // ye cookies ab server se sirf modifiedable hai
+   }
+
+   return res
+   .status(200)
+   .cookie("accessToken", 
+    accessToken, options)
+    .cookie("refreshToken", refreshToken, options )
+    .json(
+        new ApiResponse(
+            200,
+            //ye niche data hai
+            {
+              user: loggedInUser, accessToken, 
+              refreshToken  
+            },
+            "User logged in succesfully"
+        )
+    )
+
+
+})
+
+const logoutUser = asyncHandler(async(req, res) => {
+    User.findById
+})
+
 
 export {
-    registerUser
+    registerUser,
+    loginUser,
+    logoutUser
 }

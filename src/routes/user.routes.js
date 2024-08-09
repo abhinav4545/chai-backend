@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser } from "../controllers/user.controller.js";
+import { loginUser, logoutUser, registerUser } from "../controllers/user.controller.js";
 import {upload} from "../middlewares.multer.middleware.js"
 
 //method run kb ho: koi url hit ho tb run krna chahiye
@@ -20,5 +20,11 @@ router.route("/register").post(
     ]),
     registerUser
 )
+
+router.route("/login").post(loginUser)
+
+//secured route
+//middleware bhi inject kar diya
+router.route('/logout').post(verifyJWT, logoutUser)
 
 export default router
