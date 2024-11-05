@@ -131,7 +131,7 @@ const user = await User.findOne({
 })
 
 if(!user) {
-    throw new ApiError(404, "User does nit exist")
+    throw new ApiError(404, "User does not exist")
 }
 
 //User: mongoose ka ek obj hai: isme mongoose ke methods
